@@ -1,0 +1,36 @@
+Sep 14, 2012 8:46AM
+
+firstly created an unstable version just for testing and comparing the performance. 
+
+here is the hacking plan:
+
+Plan A: 
+for each given denomination combination (say, d1 to d5 is all set), I can get the score within O(500) for exact change, and maybe a little more in exchange mode
+so is that possible to iterate through all combinations (or taking a A* algorithm to find a greedy order for trying)
+and two pruning would be help: 
+1) prun if any price could not represent
+2) prun if the current cost is already exceeded the minium cost (not sure could work here)
+and could put it to multi thread programming on each combination
+and for the A*
+the current trick is making a penality function, such that trying the best d2 (lowest penality) at the first time when d1 is defined
+like the penality = sum(100 - coins needed) for each price
+and a method is needed to get the coin number by the combination (instead of cost) and use for the output
+
+Plan B:
+consider we have a combination of 4 already, so we can only chose the d5 such that all price could represent (actually this is a deeper implementation on the A* part)
+<TO BE CONTINUE>
+
+---------------------------------------
+Makefile, README and the autorun shell file needed
+
+cost_calc.cpp includes 4 methods
+
+    get_exact_cost(set<int> denominations, double N) returns a double, and -1 means some price is cannot represent
+
+    get_exchange_cost(set<int> denominations, double N) returns a double, and -1 means some price is cannot represent
+
+    get_exact_coins(set<int> denominations, double N) returns a vector<map<int, int>>, for each price, there is a map showing how many coins for each denomination is needed. where the key is denomination, and value is the coins needed for this denomination
+
+    get_exchange_coins(set<int> denominations, double N) returns a vector<map<int, int>>, same as above
+
+mint_problem.cpp would be the entry of the whole project
