@@ -21,8 +21,12 @@ int main (int argc, const char * argv[])
     dom.insert(10);
     dom.insert(50);
     double N = 3.5;
-    double cost = get_exact_cost(dom, N);
-    cout << cost << '\n';
+//    double exact_cost = get_exact_cost(dom, N);
+  //  double exchange_cost = get_exchange_cost(dom, N);
+//    get_exact_coins(dom, N);
+    get_exchange_coins(dom, N);
+//    cout << exact_cost << '\n';
+//    cout << exchange_cost << '\n';
     return 0;
 }
 

@@ -8,8 +8,14 @@
 //
 
 #include <set>
+#include <vector>
+#include <map>
 using namespace std;
 
 double get_exact_cost(set<int> denominations, double N);
 
 double get_exchange_cost(set<int> denominations, double N);
+
+vector<map<int, int> > get_exact_coins(set<int> denominations, double N);
+
+vector<map<int, int> > get_exchange_coins(set<int> denominations, double N);
