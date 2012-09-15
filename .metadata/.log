@@ -1,0 +1,68 @@
+!SESSION 2012-09-13 23:51:47.254 -----------------------------------------------
+eclipse.buildId=M20110909-1335
+java.version=1.6.0_35
+java.vendor=Apple Inc.
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -keyring /Users/ilyakorsunsky/.eclipse_keyring -showlocation
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/ilyakorsunsky/.eclipse_keyring -showlocation
+
+!ENTRY org.eclipse.core.net 1 0 2012-09-13 23:52:33.056
+!MESSAGE System property http.nonProxyHosts has been set to local|*.local|169.254/16|*.169.254/16 by an external source. This value will be overwritten using the values from the preferences
+!SESSION 2012-09-14 00:00:58.862 -----------------------------------------------
+eclipse.buildId=I20120608-1400
+java.version=1.6.0_35
+java.vendor=Apple Inc.
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.cpp.product -keyring /Users/ilyakorsunsky/.eclipse_keyring -showlocation
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.cpp.product -keyring /Users/ilyakorsunsky/.eclipse_keyring -showlocation
+
+!ENTRY org.eclipse.core.net 1 0 2012-09-14 00:01:16.880
+!MESSAGE System property http.nonProxyHosts has been set to local|*.local|169.254/16|*.169.254/16 by an external source. This value will be overwritten using the values from the preferences
+
+!ENTRY org.eclipse.ui 4 4 2012-09-14 00:01:18.274
+!MESSAGE Plug-in 'org.eclipse.cdt.ui' contributed an invalid Menu Extension (Path: 'project/org.eclipse.cdt.ui.prjmenu' is invalid): org.eclipse.cdt.ui.manageConfigsAction2
+
+!ENTRY org.eclipse.ui 4 4 2012-09-14 00:01:18.274
+!MESSAGE Plug-in 'org.eclipse.cdt.ui' contributed an invalid Menu Extension (Path: 'project/org.eclipse.cdt.ui.prjmenu' is invalid): org.eclipse.cdt.ui.buildConfigMenuAction
+
+!ENTRY org.eclipse.ui 4 4 2012-09-14 00:01:18.275
+!MESSAGE Plug-in 'org.eclipse.cdt.ui' contributed an invalid Menu Extension (Path: 'project/org.eclipse.cdt.ui.prjmenu' is invalid): org.eclipse.cdt.ui.wsselection
+
+!ENTRY org.eclipse.cdt.core 1 0 2012-09-14 00:02:01.957
+!MESSAGE Indexed 'Mint' (1 sources, 143 headers) in 11.81 sec: 13,019 declarations; 22,182 references; 0 unresolved inclusions; 6 syntax errors; 2 unresolved names (0.01%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2012-09-14 11:31:54.248
+!MESSAGE Indexed 'Mint_ecn' (1 sources, 143 headers) in 5.73 sec: 13,019 declarations; 22,182 references; 0 unresolved inclusions; 6 syntax errors; 2 unresolved names (0.01%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2012-09-14 11:40:22.716
+!MESSAGE Indexed 'Mintecn' (1 sources, 143 headers) in 2.97 sec: 13,019 declarations; 22,182 references; 0 unresolved inclusions; 6 syntax errors; 2 unresolved names (0.01%)
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.504
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Binaries in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.513
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Binary_not_found in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.515
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Choose_a_launch_configuration in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.515
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Choose_a_local_application in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.516
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Launch_Configuration_Selection in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.517
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Looking_for_executables in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.517
+!MESSAGE NLS unused message: ProfileLaunchShortcut.no_project_selected in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.518
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Profile in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.519
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Qualifier in: org.eclipse.linuxtools.internal.profiling.launch.messages
+
+!ENTRY org.eclipse.osgi 2 1 2012-09-14 11:43:14.519
+!MESSAGE NLS unused message: ProfileLaunchShortcut.Launcher in: org.eclipse.linuxtools.internal.profiling.launch.messages

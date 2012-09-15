@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Mint_ecn/src/Mint.cpp&apos; to &apos;Mint_ecn.cpp&apos;" description="Rename resource &apos;Mint.cpp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/Mint.cpp" name="Mint_ecn.cpp" stamp="1347636721675" updateReferences="true"/>
+</session>

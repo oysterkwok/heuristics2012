@@ -1,0 +1,28 @@
+/*
+ ============================================================================
+ Name        : Mintecn.cpp
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C++,
+ ============================================================================
+ */
+
+#include <iostream>
+using namespace std;
+
+int main(void) {
+	// Parameters
+/*	float N = 1.5;
+	int maxdenom = 50;
+	float scores[99][99][99][99][99] = {numeric_limits<float>::infinity()};
+
+	float d[5];*/
+}
+
+
+
+float score(int *d, float N, float bestsofar) {
+
+	return 0;
+}

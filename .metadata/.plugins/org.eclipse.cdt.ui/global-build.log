@@ -1,0 +1,14 @@
+11:41:17 **** Incremental Build of configuration Build (GNU) for project Mintecn ****
+make all 
+Making all in src
+g++ -DPACKAGE_NAME=\"Mintecn\" -DPACKAGE_TARNAME=\"mintecn\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"Mintecn\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"mintecn\" -DVERSION=\"1.0\" -I.     -g -O2 -MT Mintecn.o -MD -MP -MF .deps/Mintecn.Tpo -c -o Mintecn.o Mintecn.cpp
+mv -f .deps/Mintecn.Tpo .deps/Mintecn.Po
+g++  -g -O2   -o a.out Mintecn.o  
+make[1]: Nothing to be done for `all-am'.
+11:43:47 **** Incremental Build of configuration Build (GNU) for project Mintecn ****
+make all 
+Making all in src
+g++ -DPACKAGE_NAME=\"Mintecn\" -DPACKAGE_TARNAME=\"mintecn\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"Mintecn\ 1.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"mintecn\" -DVERSION=\"1.0\" -I.     -g -O2 -MT Mintecn.o -MD -MP -MF .deps/Mintecn.Tpo -c -o Mintecn.o Mintecn.cpp
+mv -f .deps/Mintecn.Tpo .deps/Mintecn.Po
+g++  -g -O2   -o a.out Mintecn.o  
+make[1]: Nothing to be done for `all-am'.

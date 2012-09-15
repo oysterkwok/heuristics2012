@@ -1,0 +1,8 @@
+11:39:32 **** Build of configuration Build (GNU) for project Mint_ecn ****
+make all 
+Making all in src
+make[1]: *** No rule to make target `Mint.cpp', needed by `Mint.o'.  Stop.
+make: *** [all-recursive] Error 1
+
+11:39:32 Build Finished (took 233ms)
+
