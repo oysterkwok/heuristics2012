@@ -8,11 +8,162 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include "cost_calc.h"
 
 using namespace std;
 float N = 26.37;
 int t = 2;
+
+void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name);
+void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name) {
+    
+    ofstream fout(output_file_name.c_str());
+    
+    fout << "EXACT_CHANGE_NUMBER:\n";
+    fout << "COIN_VALUES: ";
+    for (int i = 0; i < 4; i ++) {
+        fout << exact_denomination[i] << ',';
+    }
+    fout << exact_denomination[4] << '\n';
+    
+    int coins[100][7]; // 0-99: price; 0: total coin number (exclude 100), 1-5: d1-d5, 6: 100
+    memset(coins, 0, sizeof(coins));
+    for (int i = 1; i < 100; i ++) {
+        coins[i][0] = 10000;
+    }
+    for (int dst = 1; dst < 100; dst ++) {
+        for (int i = 0; i < 5; i ++) {
+            int src = dst - exact_denomination[i];
+            if (src >= 0 && coins[dst][0] > coins[src][0]) {
+                for (int j = 0; j < 6; j ++) {
+                    coins[dst][j] = coins[src][j];
+                }
+                coins[dst][0] ++;
+                coins[dst][i+1] ++;
+            }
+        }
+    }
+    
+    for (int i = 1; i < 100; i ++) {
+        fout << i << ':';
+        bool is_first = true;
+        for (int j = 1; j < 6; j ++) {
+            for (int k = 0; k < coins[i][j]; k ++) {
+                if (is_first) {
+                    is_first = false;
+                    fout << exact_denomination[j-1];
+                }
+                else
+                    fout << ',' << exact_denomination[j-1];
+            }
+        }
+        fout << '\n';
+    }
+    fout << "//\n\n";
+    
+    fout << "EXCHANGE_NUMBER:\n";
+    fout << "COIN_VALUES: ";
+    for (int i = 0; i < 4; i ++) {
+        fout << exchange_denomination[i] << ',';
+    }
+    fout << exchange_denomination[4] << '\n';
+
+    memset(coins, 0, sizeof(coins));
+    for (int i = 1; i < 100; i ++) {
+        coins[i][0] = 10000;
+    }
+    int n_coins = 0;
+    bool has_update = true;
+    while (has_update) {
+        n_coins ++;
+        has_update = false;
+        for (int dst = 1; dst < 100; dst ++) {
+            if (coins[dst][0] > n_coins) {
+                for (int i = 0; i < 5; i ++) {
+                    // case 1
+                    int src = dst - exchange_denomination[i];
+                    int n100 = 0;
+                    if (src < 0) {
+                        n100 --;
+                        src += 100;
+                    }
+                    if (coins[src][0] == n_coins - 1) {
+                        has_update = true;
+                        for (int j = 0; j < 7; j ++) {
+                            coins[dst][j] = coins[src][j];
+                        }
+                        coins[dst][0] ++;
+                        coins[dst][i+1] ++;
+                        coins[dst][6] += n100;
+                        break;
+                    }
+                    
+                    // case 2
+                    src = dst + exchange_denomination[i];
+                    n100 = 0;
+                    if (src >= 100) {
+                        n100 ++;
+                        src -= 100;
+                    }
+                    if (coins[src][0] == n_coins - 1) {
+                        has_update = true;
+                        for (int j = 0; j < 7; j ++) {
+                            coins[dst][j] = coins[src][j];
+                        }
+                        coins[dst][0] ++;
+                        coins[dst][i+1] --;
+                        coins[dst][6] += n100;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    for (int i = 1; i < 100; i ++) {
+        fout << i << ':';
+        bool is_first = true;
+        for (int j = 1; j < 7; j ++) {
+            for (int k = 0; k < coins[i][j]; k ++) {
+                int coin_value;
+                if (j < 6) {
+                    coin_value = exact_denomination[j-1];
+                }
+                else {
+                    coin_value = 100;
+                }
+                if (is_first) {
+                    is_first = false;
+                    fout << coin_value;
+                }
+                else {
+                    fout << ',' << coin_value;
+                }
+            }
+        }
+        is_first = true;
+        for (int j = 1; j < 7; j ++) {
+            for (int k = 0; k < -coins[i][j]; k ++) {
+                int coin_value;
+                if (j < 6) {
+                    coin_value = exchange_denomination[j-1];
+                }
+                else {
+                    coin_value = 100;
+                }
+                if (is_first) {
+                    is_first = false;
+                    fout << ';' << coin_value;
+                }
+                else
+                    fout << ',' << coin_value;
+            }
+        }
+        fout << '\n';
+    }
+    fout << "//\n\n";
+}
 
 void run_normal_exchange();
 
@@ -102,28 +253,21 @@ void test() {
 
 int main (int argc, const char * argv[])
 {
-    run_normal_exchange();
+//    run_normal_exchange();
     int den[5];
     den[0] = 1;
     den[1] = 5;
     den[2] = 8;
     den[3] = 25;
     den[4] = 40;
-    vector<map<int, int> > res = get_exchange_coins(den);
-    double score = 0;
-    for (int i = 1; i < res.size(); i ++) {
-        map<int, int>::iterator mi;
-        for (mi = res[i].begin(); mi != res[i].end(); mi ++) {
-            if (mi->first < 100) {
-                if (i % 5 == 0) {
-                    score += abs(mi->second) * N;
-                }
-                else
-                    score += abs(mi->second);
-            }
-        }
-    }
-    cout << score << '\n';
+    int exchange[5];
+    exchange[0] = 1;
+    exchange[1] = 5;
+    exchange[2] = 17;
+    exchange[3] = 25;
+    exchange[4] = 40;
+    string path = "/Users/oyster/Desktop/mint_out.txt";
+    mint_output(den, exchange, path);
     return 0;
 }
 
