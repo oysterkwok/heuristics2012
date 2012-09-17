@@ -12,14 +12,23 @@
 #include "cost_calc.h"
 
 using namespace std;
-float N = 26.37;
-int t = 2;
 
+/*
+ output the result of mint problem to the output file
+ arguments:
+    int * exact_denomination - the denomination set of exact change problem, size is 5
+    int * exchange_denomination - the denomination set of exchange problem, size is 5
+    string output_file_name - the output file path and name
+ procedure:
+    recalculate the number of coins of each price once again, and then output as the format given by the sample
+ */
 void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name);
 void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name) {
     
     ofstream fout(output_file_name.c_str());
-    
+    int coins[100][7]; // 0-99: price; 0: total coin number (exclude 100), 1-5: d1-d5, 6: 100
+
+    // exact change
     fout << "EXACT_CHANGE_NUMBER:\n";
     fout << "COIN_VALUES: ";
     for (int i = 0; i < 4; i ++) {
@@ -27,7 +36,6 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
     }
     fout << exact_denomination[4] << '\n';
     
-    int coins[100][7]; // 0-99: price; 0: total coin number (exclude 100), 1-5: d1-d5, 6: 100
     memset(coins, 0, sizeof(coins));
     for (int i = 1; i < 100; i ++) {
         coins[i][0] = 10000;
@@ -62,6 +70,7 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
     }
     fout << "//\n\n";
     
+    // exchange
     fout << "EXCHANGE_NUMBER:\n";
     fout << "COIN_VALUES: ";
     for (int i = 0; i < 4; i ++) {
@@ -81,7 +90,7 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
         for (int dst = 1; dst < 100; dst ++) {
             if (coins[dst][0] > n_coins) {
                 for (int i = 0; i < 5; i ++) {
-                    // case 1
+                    // case 1: forword
                     int src = dst - exchange_denomination[i];
                     int n100 = 0;
                     if (src < 0) {
@@ -99,7 +108,7 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
                         break;
                     }
                     
-                    // case 2
+                    // case 2: backword
                     src = dst + exchange_denomination[i];
                     n100 = 0;
                     if (src >= 100) {
@@ -163,97 +172,14 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
         fout << '\n';
     }
     fout << "//\n\n";
+    fout.close();
 }
 
-void run_normal_exchange();
-
-void run_normal_exchange() {
-    
-    float min_score = 100*100*N;
-    
-    clock_t c_start = clock();
-    
-
-    int best[5];
-    set<int> best2;
-    for (int d1 = 1; d1 < 51; d1 ++)
-        for (int d2 = d1+1; d2 < 51; d2 ++)
-            for (int d3 = d2+1; d3 < 51; d3 ++)
-                for (int d4 = d3+1; d4 < 51; d4 ++)
-                    for (int d5 = d4+1; d5 < 51; d5 ++) {
-                        if (t==1) {
-                        set<int> dom2;
-                        dom2.insert(d1);
-                        dom2.insert(d2);
-                        dom2.insert(d3);
-                        dom2.insert(d4);
-                        dom2.insert(d5);
-                        double score = get_exchange_cost_o(dom2, N, min_score);
-                        
-                        if (score > 0 && score < min_score) {
-                            cout << score << ',' << min_score << ',';
-                            min_score = score;
-                            best2 = dom2;
-                            for (set<int>::iterator si = dom2.begin(); si != dom2.end(); si ++) {
-                                cout << *si << ' ';
-                            }
-                            cout << '\n';
-                        }
-                        }
-                        else{
-                        int dom[5];
-                        dom[0] = d1;
-                        dom[1] = d2;
-                        dom[2] = d3;
-                        dom[3] = d4;
-                        dom[4] = d5;
-                        float score = get_exchange_cost(dom, min_score, N);
-                        if (score > 0 && score < min_score) {
-                            cout << score << ',' << min_score << ',';
-                            min_score = score;
-                            for (int i = 0; i < 5; i ++) {
-                                best[i] = dom[i];
-                                cout << best[i] << ' ';
-                            }
-                            cout << '\n';
-                        }
-                        }
-                    }
-    cout << "min_score: " << min_score << '\n';
-    get_exact_coins(best);
-    clock_t c_end = clock();
-    cout << "time_elpased: " << (c_end - c_start) * 1000.0 / CLOCKS_PER_SEC << " score: \n";    
-}
-
-void test();
-void test() {
-    for (int i = 1; i < 100; i ++) {
-        bool ok = true;
-        bool all[100];
-        memset(all, false, sizeof(all));
-        all[i] = true;
-        int target = i*2 % 100;
-        while (!all[target]) {
-            all[target] = true;
-            target += i;
-            target %= 100;
-        }
-        for (int j = 1; j < 100; j ++) {
-            if (!all[j]) {
-                ok = false;
-                break;
-            }
-        }
-        if (ok) {
-            cout << i << ',';
-        }
-    }
-    cout << '\n';
-}
-
+/*
+ This is only an example entry for testing the output function
+ */
 int main (int argc, const char * argv[])
 {
-//    run_normal_exchange();
     int den[5];
     den[0] = 1;
     den[1] = 5;
@@ -264,9 +190,9 @@ int main (int argc, const char * argv[])
     exchange[0] = 1;
     exchange[1] = 5;
     exchange[2] = 17;
-    exchange[3] = 25;
+    exchange[3] = 35;
     exchange[4] = 40;
-    string path = "/Users/oyster/Desktop/mint_out.txt";
+    string path = "mint_out.txt";
     mint_output(den, exchange, path);
     return 0;
 }
