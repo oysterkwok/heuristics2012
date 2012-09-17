@@ -128,7 +128,7 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
             for (int k = 0; k < coins[i][j]; k ++) {
                 int coin_value;
                 if (j < 6) {
-                    coin_value = exact_denomination[j-1];
+                    coin_value = exchange_denomination[j-1];
                 }
                 else {
                     coin_value = 100;
