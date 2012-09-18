@@ -19,6 +19,7 @@ int * best_exact;
 float opt_score_exact;
 int * best_exchange;
 float opt_score_exchange;
+float N = 2.49;
 
 void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name) {
     
@@ -172,181 +173,198 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
     fout.close();
 }
 
-void exact_cost(int * denominations, float N) {
-    float score = 0;
-    int coins[100]; // 0-99: price
-    memset(coins, 10000, sizeof(coins));
-    coins[0] = 0;
-    
-    for (int dst = 1; dst < 100; dst ++) {
-        for (int i = 0; i < 5; i ++) {
-            int src = dst - denominations[i];
-            if (src >= 0 && coins[dst] > coins[src] + 1) {
-                coins[dst] = coins[src] + 1;
-            }
-        }
-        if (coins[dst] == 10000) {
-            return;
-        }
-        if (dst % 5 == 0) {
-            score += N * coins[dst];
-        }
-        else {
-            score += coins[dst];
-        }
-        if (score + 99 - dst >= opt_score_exact) // purning, if optScore is defined and smaller than the current score, return failure
-            return;
-    }
+void exact_cost(int d1, int d2, int d3) {
 	
-	if (score < opt_score_exact) {
-		opt_score_exact = score;
-		for (int i = 0; i < 5; i ++) {
-			best_exact[i] = denominations[i];
+	int * denominations = new int[5];
+	denominations[0] = d1;
+	denominations[1] = d2;
+	denominations[2] = d3;
+	for (denominations[3] = denominations[2] + 1; denominations[3] < 99; denominations[3] ++) {
+		for (denominations[4] = denominations[3] + 1; denominations[4] < 100; denominations[4] ++) {
+			float score = 0;
+			int coins[100]; // 0-99: price
+			memset(coins, 10000, sizeof(coins));
+			coins[0] = 0;
+			
+			bool fail = false;
+			
+			for (int dst = 1; dst < 100; dst ++) {
+				for (int i = 0; i < 5; i ++) {
+					int src = dst - denominations[i];
+					if (src >= 0 && coins[dst] > coins[src] + 1) {
+						coins[dst] = coins[src] + 1;
+					}
+				}
+				if (coins[dst] == 10000) {
+					fail = true;
+					break;
+				}
+				if (dst % 5 == 0) {
+					score += N * coins[dst];
+				}
+				else {
+					score += coins[dst];
+				}
+				if (score + 99 - dst >= opt_score_exact) {// purning, if optScore is defined and smaller than the current score, return failure
+					fail = true;
+					break;
+				}
+			}
+			
+			if (!fail && score < opt_score_exact) {
+				opt_score_exact = score;
+				for (int i = 0; i < 5; i ++) {
+					best_exact[i] = denominations[i];
+				}
+			}
 		}
 	}
 }
 
-void exchange_cost(int * denominations, float N) {
-    
-    float score = 0;               // sum of the score, the returning value
-    
-    int reachable[100]; // reachability for each price on the current denomination, e.g. cost_each_price[43] = true means 43 cents can be reach at the current iteration
-    int visited[10];
-    int v_tail = 0;
-    memset(reachable, -1, sizeof(reachable));    // initially setting all to false (unreachable)        
-    reachable[0] = 0;
-    int assigned = 1;
-    
-    // iter 1
-    int n_coins = 1;                // number of coins for each iteration, start from 0    
-    for (int i = 0; i < 5; i ++) {
-        if (denominations[i] > 0) {
-            int dst = denominations[i];
-            if (reachable[dst] < 0) {
-                reachable[dst] = n_coins;
-                visited[v_tail] = dst;
-                v_tail ++;
-                assigned ++;
-                if (dst % 5 == 0)
-                    score += N * n_coins;
-                else
-                    score += n_coins;
-                //cout << "[+]\t" << dst << "\t" << score << '\n';
-            }
-            dst = 100 - denominations[i];
-            if (reachable[dst] < 0) {
-                reachable[dst] = n_coins;
-                visited[v_tail] = dst;
-                v_tail ++;
-                assigned ++;
-                if (dst % 5 == 0)
-                    score += N * n_coins;
-                else
-                    score += n_coins;
-                // cout << "[+]\t" << dst << "\t" << score << '\n';
-            }
-        }
-    }
-    
-    // iter 2
-    n_coins ++;
-    for (int i = 0; i < v_tail; i ++) {
-        for (int j = i; j < v_tail; j ++) {
-            int dst = (visited[i] + visited[j]) % 100;
-            if (reachable[dst] < 0) {
-                reachable[dst] = n_coins;
-                assigned ++;
-                if (dst % 5 == 0)
-                    score += N * n_coins;
-                else
-                    score += n_coins;
-                //cout << "[+]\t" << dst << "\t" << score << '\n';
-            }
-        }
-    }
-    
-    bool has_update = true;
-    while (has_update) {
-        n_coins ++;
-        has_update = false;
-        for (int dst = 1; dst < 100; dst ++) {
-            if (reachable[dst] < 0) {
-                for (int i = 0; i < v_tail; i ++) {
-                    int src = (dst + visited[i]) % 100;
-                    if (reachable[src] == n_coins - 1) {
-                        reachable[dst] = n_coins;
-                        assigned ++;
-                        if (dst % 5 == 0)
-                            score += N * n_coins;
-                        else
-                            score += n_coins;
-                        has_update = true;
-                        //cout << "[+]\t" << dst << "\t" << score << '\n';
-                        break;
-                    }
-                }
-            }
-        }
-        if (score+(n_coins+1)*(100-assigned) >= opt_score_exchange) // purning, if local_minimum is defined and smaller than the current score, return failure
-            return;
-    }
-    
-    for (int i = 1; i < 100; i ++) {  // return failure if any price is not reachable
-        if (reachable[i] < 0) {
-            return;
-        }
-    }
-	
-	if (score < opt_score_exchange) {
-		opt_score_exchange = score;
-		for (int i = 0; i < 5; i ++) {
-			best_exchange[i] = denominations[i];
+void exchange_cost(int d1, int d2, int d3) {
+	int * denominations = new int[5];
+	denominations[0] = d1;
+	denominations[1] = d2;
+	denominations[2] = d3;
+
+	for (denominations[3] = denominations[2] + 1; denominations[3] < 50; denominations[3] ++) {
+		for (denominations[4] = denominations[3] + 1; denominations[4] < 51; denominations[4] ++) {
+			
+			float score = 0;               // sum of the score, the returning value
+			
+			bool fail = false;
+
+			int reachable[100]; // reachability for each price on the current denomination, e.g. cost_each_price[43] = true means 43 cents can be reach at the current iteration
+			int visited[10];
+			int v_tail = 0;
+			memset(reachable, -1, sizeof(reachable));    // initially setting all to false (unreachable)        
+			reachable[0] = 0;
+			int assigned = 1;
+			
+			// iter 1
+			int n_coins = 1;                // number of coins for each iteration, start from 0    
+			for (int i = 0; i < 5; i ++) {
+				if (denominations[i] > 0) {
+					int dst = denominations[i];
+					if (reachable[dst] < 0) {
+						reachable[dst] = n_coins;
+						visited[v_tail] = dst;
+						v_tail ++;
+						assigned ++;
+						if (dst % 5 == 0)
+							score += N * n_coins;
+						else
+							score += n_coins;
+						//cout << "[+]\t" << dst << "\t" << score << '\n';
+					}
+					dst = 100 - denominations[i];
+					if (reachable[dst] < 0) {
+						reachable[dst] = n_coins;
+						visited[v_tail] = dst;
+						v_tail ++;
+						assigned ++;
+						if (dst % 5 == 0)
+							score += N * n_coins;
+						else
+							score += n_coins;
+						// cout << "[+]\t" << dst << "\t" << score << '\n';
+					}
+				}
+			}
+			
+			// iter 2
+			n_coins ++;
+			for (int i = 0; i < v_tail; i ++) {
+				for (int j = i; j < v_tail; j ++) {
+					int dst = (visited[i] + visited[j]) % 100;
+					if (reachable[dst] < 0) {
+						reachable[dst] = n_coins;
+						assigned ++;
+						if (dst % 5 == 0)
+							score += N * n_coins;
+						else
+							score += n_coins;
+						//cout << "[+]\t" << dst << "\t" << score << '\n';
+					}
+				}
+			}
+			
+			bool has_update = true;
+			while (has_update) {
+				n_coins ++;
+				has_update = false;
+				for (int dst = 1; dst < 100; dst ++) {
+					if (reachable[dst] < 0) {
+						for (int i = 0; i < v_tail; i ++) {
+							int src = (dst + visited[i]) % 100;
+							if (reachable[src] == n_coins - 1) {
+								reachable[dst] = n_coins;
+								assigned ++;
+								if (dst % 5 == 0)
+									score += N * n_coins;
+								else
+									score += n_coins;
+								has_update = true;
+								//cout << "[+]\t" << dst << "\t" << score << '\n';
+								break;
+							}
+						}
+					}
+				}
+				if (score+(n_coins+1)*(100-assigned) >= opt_score_exchange) { // purning, if local_minimum is defined and smaller than the current score, return failure
+					fail = true;
+					break;
+				}
+			}
+			
+			if (fail) {
+				continue;
+			}
+			
+			for (int i = 1; i < 100; i ++) {  // return failure if any price is not reachable
+				if (reachable[i] < 0) {
+					fail = true;
+					break;
+				}
+			}
+			
+			if (!fail && score < opt_score_exchange) {
+				opt_score_exchange = score;
+				for (int i = 0; i < 5; i ++) {
+					best_exchange[i] = denominations[i];
+				}
+			}
 		}
 	}
 }
 
-void run_exact(float N) {
-	time_t exact_start = clock();
+void run_exact() {
     opt_score_exact = 10000 * 100 * N;
 	best_exact = new int[5];
-//	pool thread_pool_exact(15);
-    int deno[5];
-    deno[0] = 1;
-    for (deno[1] = deno[0] + 1; deno[1] < 97; deno[1] ++) {
-        for (deno[2] = deno[1] + 1; deno[2] < 98; deno[2] ++) {
-            for (deno[3] = deno[2] + 1; deno[3] < 99; deno[3] ++) {
-                for (deno[4] = deno[3] + 1; deno[4] < 100; deno[4] ++) {
-//					thread_pool_exact.schedule(boost::bind(&exact_cost, deno, N));
-					exact_cost(deno, N);
-                }
-            }
+	pool thread_pool_exact(20);
+	int d1 = 1;
+    for (int d2 = d1 + 1; d2 < 97; d2 ++) {
+        for (int d3 = d2 + 1; d3 < 98; d3 ++) {
+			thread_pool_exact.schedule(boost::bind(&exact_cost, d1, d2, d3));
         }
     }
-//	thread_pool_exact.wait();
-	time_t exact_end = clock();
-	cout << "exact done: " << exact_start << " to " << exact_end << '\n';
+	thread_pool_exact.wait();
 }
 
-void run_exchange(float N) {
+void run_exchange() {
 	time_t exchange_start = clock();
     opt_score_exchange = 10000 * 100 * N;
 	best_exchange = new int[5];
-//	pool thread_pool_exchange(15);
-    int deno[5];
-    deno[0] = 1;
-    for (deno[0] = 1; deno[0] < 47; deno[0] ++) {
-        for (deno[1] = deno[0] + 1; deno[1] < 48; deno[1] ++) {
-            for (deno[2] = deno[1] + 1; deno[2] < 49; deno[2] ++) {
-                for (deno[3] = deno[2] + 1; deno[3] < 50; deno[3] ++) {
-                    for (deno[4] = deno[3] + 1; deno[4] < 51; deno[4] ++) {
-//						thread_pool_exchange.schedule(boost::bind(&exchange_cost, deno, N));
-						exchange_cost(deno, N);
-                    }
-                }
+	pool thread_pool_exchange(20);
+	
+    for (int d1 = 1; d1 < 47; d1 ++) {
+        for (int d2 = d1 + 1; d2 < 48; d2 ++) {
+            for (int d3 = d2 + 1; d3 < 49; d3 ++) {
+				thread_pool_exchange.schedule(boost::bind(&exchange_cost, d1, d2, d3));
             }
         }
     }
-//	thread_pool_exchange.wait();
+	thread_pool_exchange.wait();
 	time_t exchange_end = clock();
 	cout << "exchange done: " << exchange_start << " to " << exchange_end << '\n';
 }
@@ -357,24 +375,13 @@ void run_exchange(float N) {
  */
 int main (int argc, const char * argv[])
 {
-    clock_t t_start = clock();
-    float N = 2.49;
-	bool use_multi_threads = true;
-	if (use_multi_threads) {
-		pool tp;
-		tp.size_controller().resize(2);
-		tp.schedule(boost::bind(&run_exact, N));
-		tp.schedule(boost::bind(&run_exchange, N));
-		tp.wait();
-	}
-	else {
-		run_exact(N);
-		run_exchange(N);
-	}
+	time_t t_start = time(NULL);
+	run_exact();
+	run_exchange();
     string output_path = "mint_out.txt";
     mint_output(best_exact, best_exchange, output_path);
-    clock_t t_end = clock();
-    cout << "Time Elapsed: " << 1.0 * (t_end-t_start) / CLOCKS_PER_SEC << " seconds\n";
+    time_t t_end = time(NULL);
+    cout << "Time Elapsed: " << t_end-t_start << " seconds\n";
     return 0;
 }
 
