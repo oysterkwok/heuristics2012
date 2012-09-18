@@ -9,10 +9,16 @@
 
 #include <iostream>
 #include <fstream>
-#include <boost/array.hpp>
+#include "threadpool.hpp"
 #include "mint_problem.h"
 
 using namespace std;
+using namespace boost::threadpool;
+
+int * best_exact;
+float opt_score_exact;
+int * best_exchange;
+float opt_score_exchange;
 
 void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name) {
     
@@ -166,7 +172,7 @@ void mint_output(int * exact_denomination, int * exchange_denomination, string o
     fout.close();
 }
 
-float exact_cost(int * denominations, float optScore, float N) {
+void exact_cost(int * denominations, float N) {
     float score = 0;
     int coins[100]; // 0-99: price
     memset(coins, 10000, sizeof(coins));
@@ -180,7 +186,7 @@ float exact_cost(int * denominations, float optScore, float N) {
             }
         }
         if (coins[dst] == 10000) {
-            return optScore;
+            return;
         }
         if (dst % 5 == 0) {
             score += N * coins[dst];
@@ -188,14 +194,19 @@ float exact_cost(int * denominations, float optScore, float N) {
         else {
             score += coins[dst];
         }
-        if (optScore > 0 && score + 99 - dst >= optScore) // purning, if optScore is defined and smaller than the current score, return failure
-            return optScore;
-
+        if (score + 99 - dst >= opt_score_exact) // purning, if optScore is defined and smaller than the current score, return failure
+            return;
     }
-    return score;
+	
+	if (score < opt_score_exact) {
+		opt_score_exact = score;
+		for (int i = 0; i < 5; i ++) {
+			best_exact[i] = denominations[i];
+		}
+	}
 }
 
-float exchange_cost(int * denominations, float optScore, float N) {
+void exchange_cost(int * denominations, float N) {
     
     float score = 0;               // sum of the score, the returning value
     
@@ -276,44 +287,51 @@ float exchange_cost(int * denominations, float optScore, float N) {
                 }
             }
         }
-        if (optScore > 0 && score+(n_coins+1)*(100-assigned) >= optScore) // purning, if local_minimum is defined and smaller than the current score, return failure
-            return optScore;
+        if (score+(n_coins+1)*(100-assigned) >= opt_score_exchange) // purning, if local_minimum is defined and smaller than the current score, return failure
+            return;
     }
     
     for (int i = 1; i < 100; i ++) {  // return failure if any price is not reachable
         if (reachable[i] < 0) {
-            return optScore;
+            return;
         }
     }
-    return score;
+	
+	if (score < opt_score_exchange) {
+		opt_score_exchange = score;
+		for (int i = 0; i < 5; i ++) {
+			best_exchange[i] = denominations[i];
+		}
+	}
 }
 
-int * run_exact(float N) {
-    float min_score = 10000 * 100 * N;
-    int * exact_denomination = new int[5];
+void run_exact(float N) {
+	time_t exact_start = clock();
+    opt_score_exact = 10000 * 100 * N;
+	best_exact = new int[5];
+//	pool thread_pool_exact(15);
     int deno[5];
     deno[0] = 1;
     for (deno[1] = deno[0] + 1; deno[1] < 97; deno[1] ++) {
         for (deno[2] = deno[1] + 1; deno[2] < 98; deno[2] ++) {
             for (deno[3] = deno[2] + 1; deno[3] < 99; deno[3] ++) {
                 for (deno[4] = deno[3] + 1; deno[4] < 100; deno[4] ++) {
-                    float score = exact_cost(deno, min_score, N);
-                    if (score < min_score) {
-                        min_score = score;
-                        for (int i = 0; i < 5; i ++) {
-                            exact_denomination[i] = deno[i];
-                        }
-                    }
+//					thread_pool_exact.schedule(boost::bind(&exact_cost, deno, N));
+					exact_cost(deno, N);
                 }
             }
         }
     }
-    return exact_denomination;
+//	thread_pool_exact.wait();
+	time_t exact_end = clock();
+	cout << "exact done: " << exact_start << " to " << exact_end << '\n';
 }
 
-int * run_exchange(float N) {
-    float min_score = 10000 * 100 * N;
-    int * exchange_denomination = new int[5];
+void run_exchange(float N) {
+	time_t exchange_start = clock();
+    opt_score_exchange = 10000 * 100 * N;
+	best_exchange = new int[5];
+//	pool thread_pool_exchange(15);
     int deno[5];
     deno[0] = 1;
     for (deno[0] = 1; deno[0] < 47; deno[0] ++) {
@@ -321,21 +339,18 @@ int * run_exchange(float N) {
             for (deno[2] = deno[1] + 1; deno[2] < 49; deno[2] ++) {
                 for (deno[3] = deno[2] + 1; deno[3] < 50; deno[3] ++) {
                     for (deno[4] = deno[3] + 1; deno[4] < 51; deno[4] ++) {
-                        float score = exchange_cost(deno, min_score, N);
-                        if (score < min_score) {
-                            min_score = score;
-                            for (int i = 0; i < 5; i ++) {
-                                exchange_denomination[i] = deno[i];
-                            }
-                        }
+//						thread_pool_exchange.schedule(boost::bind(&exchange_cost, deno, N));
+						exchange_cost(deno, N);
                     }
                 }
             }
         }
     }
-
-    return exchange_denomination;
+//	thread_pool_exchange.wait();
+	time_t exchange_end = clock();
+	cout << "exchange done: " << exchange_start << " to " << exchange_end << '\n';
 }
+
 
 /*
  This is only an example entry for testing, N is hardcoded
@@ -344,10 +359,20 @@ int main (int argc, const char * argv[])
 {
     clock_t t_start = clock();
     float N = 2.49;
-    int * exact_denomination = run_exact(N);
-    int * exchange_denomination = run_exchange(N);
+	bool use_multi_threads = true;
+	if (use_multi_threads) {
+		pool tp;
+		tp.size_controller().resize(2);
+		tp.schedule(boost::bind(&run_exact, N));
+		tp.schedule(boost::bind(&run_exchange, N));
+		tp.wait();
+	}
+	else {
+		run_exact(N);
+		run_exchange(N);
+	}
     string output_path = "mint_out.txt";
-    mint_output(exact_denomination, exchange_denomination, output_path);
+    mint_output(best_exact, best_exchange, output_path);
     clock_t t_end = clock();
     cout << "Time Elapsed: " << 1.0 * (t_end-t_start) / CLOCKS_PER_SEC << " seconds\n";
     return 0;

@@ -19,8 +19,8 @@ using namespace std;
  */
 void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name);
 
-float exact_cost(int * denominations, float optScore, float N);
-float exchange_cost(int * denominations, float optScore, float N);
+void exact_cost(int * denominations, float N);
+void exchange_cost(int * denominations, float N);
 
-int * run_exact(float N);
-int * run_exchange(float N);
+void run_exact(float N);
+void run_exchange(float N);
