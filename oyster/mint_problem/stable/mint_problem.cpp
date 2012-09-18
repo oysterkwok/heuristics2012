@@ -352,7 +352,6 @@ void run_exact() {
 }
 
 void run_exchange() {
-	time_t exchange_start = clock();
     opt_score_exchange = 10000 * 100 * N;
 	best_exchange = new int[5];
 	pool thread_pool_exchange(20);
@@ -365,8 +364,6 @@ void run_exchange() {
         }
     }
 	thread_pool_exchange.wait();
-	time_t exchange_end = clock();
-	cout << "exchange done: " << exchange_start << " to " << exchange_end << '\n';
 }
 
 
