@@ -19,7 +19,7 @@ int * best_exact;
 float opt_score_exact;
 int * best_exchange;
 float opt_score_exchange;
-float N = 2.49;
+float N = 1.19;
 
 void mint_output(int * exact_denomination, int * exchange_denomination, string output_file_name) {
     
@@ -375,6 +375,8 @@ int main (int argc, const char * argv[])
 	time_t t_start = time(NULL);
 	run_exact();
 	run_exchange();
+	cout << opt_score_exact << '\n';
+	cout << opt_score_exchange << '\n';
     string output_path = "mint_out.txt";
     mint_output(best_exact, best_exchange, output_path);
     time_t t_end = time(NULL);
