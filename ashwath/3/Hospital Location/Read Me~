@@ -1,0 +1,14 @@
+The clusterList is a vector< vector<point> >.This clusterlist will have 5 clusters sorted according to their sizes.
+To prepare this Clusterlist:
+1) Applied K-means
+2) Merge the clusters which were close to each other
+3) Sort the ClusterList according to cluster sizes
+4) After sorting the top 5 Clusters retained, rest were erased.
+5) Hospital location will be centroids of these 5 final clusters.
+
+Output: hospitals (vector containing hospital locations) 
+
+Please sort the number of ambulances from input file and assign them is descending order to the above mentioned vector, with hospitals.at(0) getting the max number of ambulances. 
+
+If needed, can perform parameter tuning based on intial number of cluster(asked by user), though won't recommend anything more than 35.
+

@@ -1,0 +1,13 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <math.h>
+#include <sstream>
+using namespace std;
+
+struct point{
+	float x;
+	float y;
+};
+
+
