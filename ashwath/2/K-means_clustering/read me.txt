@@ -1,0 +1,5 @@
+To compile and run
+
+1)Inside the K-means directory
+2)g++ kmeans.cpp -o kmeans
+3)./kmeans
