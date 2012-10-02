@@ -1,4 +1,5 @@
 #include"PFIH.h"
+#include "hospital_loc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -16,12 +17,32 @@ float computeScoreIfValid(vector<vector<int> > routes, vector<patient> patients,
 
 
 
-int main() {
+int main(int argc, char * argv[]) {
+
+
+	// PREPROCESSING FOR SUBMISSION 
+	// ALL INPUT IS GIVEN THROUGH STANDARD INPUT
+	string inputDataFileName = "input_data.txt";
+	ofstream inData(inputDataFileName.c_str());
+	string inputString;
+	while (cin >> inputString) {
+		inData << inputString;
+	}
+	inData.close();
+
+	// compute hospital locations
+	findHospitalLocations(inputDataFileName);
+
+	// do initial PFIH computation
+	float timeWeight = 500;
+	string outputFileName = "initial_routes.txt";
+	string hospitalLocationsFileName = "hospitalLocations.txt";
+
+	PFIH(timeWeight, inputDataFileName, outputFileName, hospitalLocationsFileName);	
 
 
 	// input patient information
 	vector<patient> patients;
-	string inputDataFileName = "data.txt";
 	ifstream in(inputDataFileName.c_str());
 	string line;
 	char c;
@@ -37,9 +58,25 @@ int main() {
 		patients.push_back(newPatient);
 	}
 
+	while (strcmp(line.substr(0,8).c_str(), "hospital")) // skip ahead to hospital data
+		getline(in, line);
+
+	// input sets of hospitals and ambulances
+	// NOTE: no empty lines between "hospital" and number of ambulances or between lines of data
+	int nambulances[5];
+	vector<vector<int> > routes; 	// each route is a sequence of indices
+									// 1003 denotes hospital 3
+									// and 57 denotes patient 57
+	for (int i = 0; i < 5; i++) {
+		in >> nambulances[i];
+		for (int j = 0; j < nambulances[i]; j++) 
+			routes.push_back(vector<int> (1,1000+i+1));
+	}
+
+
 
 	// input hospital locations
-	string hospitalLocationsFileName = "hospitalLocations.txt";
+//	string hospitalLocationsFileName = "hospitalLocations.txt";
 	ifstream hlin(hospitalLocationsFileName.c_str());
 	getline(hlin, line);
 	vector<pair<int,int> > hospitalLocations(5);
@@ -49,6 +86,18 @@ int main() {
 		hospitalLocations[i] = pair<int,int>(xloc, yloc);
 	}
 	hlin.close();
+
+	// initialize costs of all the patients to each hospital
+	// also store the ID of the nearest hospital (to tell the EMTs)
+	pair<float,int> temp;
+	float weight = 500;
+	for (unsigned int i = 0; i < patients.size(); i++) {
+		patients[i].cost = computeCost(patients[i].x, patients[i].y, patients[i].t, weight, hospitalLocations);
+		temp = min(patients[i].cost);
+		patients[i].lowCost = temp.first;
+		patients[i].nearestHospital = temp.second + 1000 + 1;
+	}
+
 
 
 	srand ( time(NULL) );
@@ -81,22 +130,28 @@ int main() {
 	inInit.close();
 
 	score = computeScore(s, patients, hospitalLocations);
-	cout << "initial score: " << score << endl;
+//	cout << "initial score: " << score << endl;
 
+	// write out this solution 
+	writeRoutesToFileStd(outputFileName.c_str(), s, hospitalLocations, nambulances, patients);
+
+/*
 
 	float mutProbs[5]; 	// contains "probability" masses for selecting 1 of 5 mutation operartors
 	float mutProbTot = 5;
 	for (int i = 0; i < 5; i++) 
 		mutProbs[i] = 1.0;
+	mutProbs[4] = 2.5;
+
 	// for some fixed number of iterations (should use convergence criteria?)
-	int maxIter = pow(10,6);			// maximum number of iterations for SA
+	int maxIter = 3.0*pow(10,4);			// maximum number of iterations for SA
 	int coolingPeriod = 100; 		// number of iterations before changing temperature
 	float coolingRate = 1 - 0.05; 	// by how much does T decrease (or increase)?
 	float T = 100;
 	int index;
 	float delta;
 	for (int i = 0; i < maxIter; i++) {
-		if (i % 100000 == 0)
+		if (i % 10000 == 0)
 			cout << "begin iteration " << i+1 << "/" << maxIter << endl;
 		// set T 
 		if (i > 0 && i % coolingPeriod == 0)
@@ -146,14 +201,14 @@ int main() {
 				if ( exp(-delta / T) > ((float) rand() / (RAND_MAX)) ){
 					s = sPrime;
 					score = newScore;
-					cout << newScore << endl;
-					cout << delta << endl;
+//					cout << newScore << endl;
+//					cout << delta << endl;
 				}
 		}
 	}
 
 	cout << "New Best Score: " << computeScore(s, patients, hospitalLocations) << endl;
-	
+	*/
 	return 0;
 }
 
@@ -177,8 +232,8 @@ vector<vector<int> > mutation_swap(vector<vector<int> > routes, vector<patient> 
 	vector<vector<int> > newRoutes = routes;
 	int r1 = rand() % routes.size();		// route 1
 	int r2 = rand() % routes.size();		// route 2	
-	int p1 = 1 + rand() % routes[r1].size()-1; // position 1 (exclude initial hospital)
-	int p2 = 1 + rand() % routes[r2].size()-1; // position 2 (exclude initial hospital)
+	int p1 = 1 + rand() % (routes[r1].size()-1); // position 1 (exclude initial hospital)
+	int p2 = 1 + rand() % (routes[r2].size()-1); // position 2 (exclude initial hospital)
 
 
 	// swap the positions
@@ -199,8 +254,8 @@ vector<vector<int> > mutation_insert(vector<vector<int> > routes, vector<patient
 	vector<vector<int> > newRoutes = routes;
 	int r1 = rand() % routes.size();		// route 1
 	int r2 = rand() % routes.size();		// route 2	
-	int p1 = 1 + rand() % routes[r1].size()-1; // position 1 (exclude initial hospital)
-	int p2 = 1 + rand() % routes[r2].size()-1; // position 2 (exclude initial hospital)
+	int p1 = 1 + rand() % (routes[r1].size()-1); // position 1 (exclude initial hospital)
+	int p2 = 1 + rand() % (routes[r2].size()-1); // position 2 (exclude initial hospital)
 
 	// move p1 from r1 to p2 of r2  
 	newRoutes[r2].insert( newRoutes[r2].begin() + p2, routes[r1][p1]);
@@ -220,8 +275,8 @@ vector<vector<int> > mutation_scramble(vector<vector<int> > routes, vector<patie
 	
 	vector<vector<int> > newRoutes = routes;
 	int r = rand() % routes.size();		// the route
-	int p1 = 1 + rand() % routes[r].size()-1; // position 1 (exclude initial hospital)
-	int p2 = 1 + rand() % routes[r].size()-1; // position 2 (exclude initial hospital)
+	int p1 = 1 + rand() % (routes[r].size()-1); // position 1 (exclude initial hospital)
+	int p2 = 1 + rand() % (routes[r].size()-1); // position 2 (exclude initial hospital)
 
 	// scrambe all elements between p1 and p2, inclusive
 
@@ -240,8 +295,8 @@ vector<vector<int> > mutation_inversion(vector<vector<int> > routes, vector<pati
 
 	vector<vector<int> > newRoutes = routes;
 	int r = rand() % routes.size();		// the route
-	int p1 = 1 + rand() % routes[r].size()-1; // position 1 (exclude initial hospital)
-	int p2 = 1 + rand() % routes[r].size()-1; // position 2 (exclude initial hospital)
+	int p1 = 1 + rand() % (routes[r].size()-1); // position 1 (exclude initial hospital)
+	int p2 = 1 + rand() % (routes[r].size()-1); // position 2 (exclude initial hospital)
 
 	// reverse all elements between p1 and p2, inclusive
 	reverse ( newRoutes[r].begin() + p1, newRoutes[r].begin() + p2 );
@@ -264,7 +319,7 @@ vector<vector<int> > mutation_pfih(vector<vector<int> > routes, vector<patient> 
 
 	int r = rand() % routes.size();		// the route
 	int p_ind;
-	do { p_ind = 1 + rand() % routes[r].size()-1;} // position (exclude initial hospital) 
+	do { p_ind = 1 + rand() % (routes[r].size()-1);} // position (exclude initial hospital) 
 	 while (routes[r][p_ind] > 1000);
 
 	float bestScore = computeScore(routes, patients, hospitalLocations);
@@ -389,9 +444,74 @@ float computeScoreIfValid(vector<vector<int> > routes, vector<patient> patients,
 
 
 
+// removes dead patients
+// and also adjacent hospitals
+vector<vector<int> > removeDeadPatients(vector<vector<int> > routes, vector<pair<int,int> > hospLocs, vector<patient> patients) {
+	vector<vector<int> > newRoutes = routes;
+
+	
+	int time;
+	for (int i = 0; i < routes.size(); i++) {
+		vector<int> route = routes[i];
+		vector<int> newRoute = route;
+		time = 0;
+		int x0,y0,xf,yf;
+		int id;
+		x0 = hospLocs[ route[0] - 1000 - 1  ].first;
+		y0 = hospLocs[ route[0] - 1000 - 1  ].second;
+		int nPatientsLoaded = 0;
+		int patientIDs[4];
+		int timesToLive[4];
+		newRoute.push_back(route[0]); // always included initial hospital
+		for (int j = 1; j < route.size(); j++) {
+			id = route[j];
+			// destination is a patient
+			if ( id < 1000) {
+				xf = patients[ id - 1 ].x;
+				yf = patients[ id - 1 ].y;
+				time++;
+
+				time += abs(xf - x0);
+				time += abs(yf - y0);
+				patientIDs[nPatientsLoaded] = id;
+				timesToLive[nPatientsLoaded++] = patients[ id - 1 ].t;
+			}
+			// destination is a hospital
+			else {
+				xf = hospLocs[ route[j] - 1000 - 1  ].first;
+				yf = hospLocs[ route[j] - 1000 - 1  ].second;
+				if (nPatientsLoaded > 0)
+					time++;
+
+				time += abs(xf - x0);
+				time += abs(yf - y0);
+
+				// count living bodies
+				for (int k = 0; k < nPatientsLoaded; k++) 
+					if (timesToLive[k] >= time) {
+						newRoute.push_back(patientIDs[k]);
+					}
+				// only included hospital if it wasn't adjacent to another hospital
+				if (nPatientsLoaded > 0)
+					newRoute.push_back(route[j]);
+				nPatientsLoaded = 0;
+			}
+			newRoutes.push_back(newRoute);
+
+			// set up for next iteration
+			x0 = xf;
+			y0 = yf;
+		}
+	}
+	return newRoutes;
 
 
+}
 
+
+vector<int> getUnservicedPatients (vector<vector<int> >) {
+	
+}
 
 
 
