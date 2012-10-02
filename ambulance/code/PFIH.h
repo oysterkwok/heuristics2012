@@ -1,6 +1,8 @@
 #include<iostream>
 #include<string>
+#include<string.h>
 #include<fstream>
+#include<cstdlib>
 #include<queue>
 #include<sstream>
 #include<stdio.h>
@@ -23,7 +25,9 @@ public:
 };
 
 void PFIH(float, string, string, string);
-void writeRoutesToFile(string fileName, vector<vector<int> > routes);
+void writeRoutesToFile(string fileName, vector<vector<int> > routes, vector<pair<int,int> >, int*, vector<patient>);
+void writeRoutesToFileStd(string fileName, vector<vector<int> > routes, vector<pair<int,int> > hospLocs, int * nambulances, vector<patient> patients);
+void writeRoutesToFileUnformatted(string fileName, vector<vector<int> > routes, vector<pair<int,int> > hospLocs, int * nambulances, vector<patient> patients);
 vector<float> computeCost(int, int, int, float, vector<pair<int,int> >);
 void findNextBestPatient();
 pair<float,int> min(vector<float>);

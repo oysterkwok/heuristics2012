@@ -41,7 +41,7 @@ void PFIH(float weight, string inputDataFileName, string outputFileName, string 
 	while (strcmp(line.substr(0,8).c_str(), "hospital")) // skip ahead to hospital data
 		getline(in, line);
 
-	cout << "number of patients: " <<  patients.size() << endl;
+//	cout << "number of patients: " <<  patients.size() << endl;
 
 	// input sets of hospitals and ambulances
 	// NOTE: no empty lines between "hospital" and number of ambulances or between lines of data
@@ -70,9 +70,9 @@ void PFIH(float weight, string inputDataFileName, string outputFileName, string 
 	}
 	hlin.close();
 
-	cout << "hospital locations " << endl;
-	for (int i = 0; i < 5; i++) 
-		cout << "\t" << hospitalLocations[i].first << "," << hospitalLocations[i].second << endl;
+//	cout << "hospital locations " << endl;
+//	for (int i = 0; i < 5; i++) 
+//		cout << "\t" << hospitalLocations[i].first << "," << hospitalLocations[i].second << endl;
 
 	// initialize costs of all the patients to each hospital
 	// also store the ID of the nearest hospital (to tell the EMTs)
@@ -84,7 +84,7 @@ void PFIH(float weight, string inputDataFileName, string outputFileName, string 
 		patients[i].nearestHospital = temp.second + 1000 + 1;
 	}
 
-	cout << "begin to test routes" << endl;
+//	cout << "begin to test routes" << endl;
 
 	// LOOP: add patient to set of routes
 	priority_queue<patient,vector<patient>,comparePatients> pq(patients.begin(), patients.end());
@@ -155,20 +155,27 @@ void PFIH(float weight, string inputDataFileName, string outputFileName, string 
 		routes = bestRoutes;
 	}
 
-	cout << "Rescued " << bestScore << " patients " << endl;	
-	writeRoutesToFile(outputFileName.c_str(), routes);
+//	cout << "Rescued " << bestScore << " patients " << endl;	
+	writeRoutesToFileUnformatted(outputFileName.c_str(), routes, hospitalLocations, nambulances, patients);
 
 }
 
-void writeRoutesToFile(string fileName, vector<vector<int> > routes) {
+void writeRoutesToFile(string fileName, vector<vector<int> > routes, vector<pair<int,int> > hospLocs, int * nambulances, vector<patient> patients) {
 	ofstream out(fileName.c_str());
 
+	out << "POSITION" << endl;
+	for (int i = 0; i < 5; i++) 
+		out << "H1," << hospLocs[i].first << "," << hospLocs[i].second << "," << nambulances[i] << endl;
+
+	out << "ROUTINE" << endl;
 	for (int i = 0; i < routes.size(); i++) {
-		for (int j = 0; j < routes[i].size(); j++) {
-			if (routes[i][j] < 1000) 
-				out << "P" << routes[i][j] << " ";
+		out << "H" <<  routes[i][0] - 1000 << "," << hospLocs[routes[i][0] - 1000 - 1].first << "," << hospLocs[routes[i][0] - 1000 - 1].second;
+		for (int j = 1; j < routes[i].size(); j++) {
+			int id = routes[i][j];
+			if (id < 1000) 
+				out << ",P" << id << "," << patients[ id - 1 ].x << "," << patients[ id - 1 ].y << "," << patients[ id - 1 ].t;
 			else
-				out << "H" <<  routes[i][j] - 1000 << " ";
+				out << ",H" <<  id - 1000 << "," << hospLocs[id - 1000 - 1].first << "," << hospLocs[id - 1000 - 1].second;
 		}
 		out << endl;
 	}
@@ -176,6 +183,46 @@ void writeRoutesToFile(string fileName, vector<vector<int> > routes) {
 	out.close();
 }
 
+
+void writeRoutesToFileStd(string fileName, vector<vector<int> > routes, vector<pair<int,int> > hospLocs, int * nambulances, vector<patient> patients) {
+//	ofstream out(fileName.c_str());
+
+	cout << "POSITION" << endl;
+	for (int i = 0; i < 5; i++) 
+		cout << "H1," << hospLocs[i].first << "," << hospLocs[i].second << "," << nambulances[i] << endl;
+
+	cout << "ROUTINE" << endl;
+	for (int i = 0; i < routes.size(); i++) {
+		cout << "H" <<  routes[i][0] - 1000 << "," << hospLocs[routes[i][0] - 1000 - 1].first << "," << hospLocs[routes[i][0] - 1000 - 1].second;
+		for (int j = 1; j < routes[i].size(); j++) {
+			int id = routes[i][j];
+			if (id < 1000) 
+				cout << ",P" << id << "," << patients[ id - 1 ].x << "," << patients[ id - 1 ].y << "," << patients[ id - 1 ].t;
+			else
+				cout << ",H" <<  id - 1000 << "," << hospLocs[id - 1000 - 1].first << "," << hospLocs[id - 1000 - 1].second;
+		}
+		cout << endl;
+	}
+
+//	out.close();
+}
+
+void writeRoutesToFileUnformatted(string fileName, vector<vector<int> > routes, vector<pair<int,int> > hospLocs, int * nambulances, vector<patient> patients) {
+	ofstream out(fileName.c_str());
+
+	for (int i = 0; i < routes.size(); i++) {
+		for (int j = 0; j < routes[i].size(); j++) {
+			int id = routes[i][j];
+			if (id < 1000) 
+				out << "P" << id << " ";
+			else
+				out << "H" <<  id - 1000 << " ";
+		}
+		out << endl;
+	}
+
+	out.close();
+}
 
 
 pair<float,int> min(vector<float> vec) {
