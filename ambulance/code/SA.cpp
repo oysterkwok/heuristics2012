@@ -26,7 +26,7 @@ int main(int argc, char * argv[]) {
 	ofstream inData(inputDataFileName.c_str());
 	string inputString;
 	while (cin >> inputString) {
-		inData << inputString;
+		inData << inputString << "\n";
 	}
 	inData.close();
 
@@ -129,6 +129,18 @@ int main(int argc, char * argv[]) {
 
 	inInit.close();
 
+	bool sp[500];
+	for (int i = 0; i < s.size(); i ++) {
+		for (vector<int>::iterator iter = s[i].begin(); iter != s[i].end(); iter ++) {
+			if (sp[*iter]) {
+				s[i].erase(iter);
+			}
+			else {
+				sp[s[i][*iter]] = true;
+			}
+		}
+	}
+	
 	score = computeScore(s, patients, hospitalLocations);
 //	cout << "initial score: " << score << endl;
 
