@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include <stdio.h>
 #include "game_state.h"
 
 game_state::game_state(int _state_vector[25], bool _is_adding) {
@@ -58,7 +59,7 @@ game_state::game_state(int _state_vector[25], bool _is_adding) {
 	}
 	
 	winning_move = pair<int, int>(-1, 16);
-	if (left_support_state * right_support_state < 0) {
+	if (left_support_state * right_support_state > 0) {
 		is_lose_state = true;
 	}
 	else {
@@ -72,7 +73,9 @@ bool game_state::is_first_player_move() {
 
 vector<int> game_state::get_empty_slots() {
 	bool empty_slot_map[31];
-	memset(empty_slot_map, true, sizeof(empty_slot_map));
+	for (int i = 0; i < 31; i ++) {
+		empty_slot_map[i] = true;
+	}
 	for (int i = 0; i < 25; i ++) {
 		if (state_vector[i] != 16) {
 			empty_slot_map[state_vector[i]+15] = false;
@@ -94,14 +97,14 @@ vector<int> game_state::get_available_blocks() {
 	}
 	if (is_first_player_move()) {
 		for (int i = 1; i < 13; i ++) {
-			if (state_vector[i] != 16) {
+			if (state_vector[i] == 16) {
 				available_blocks.push_back(i);
 			}
 		}
 	}
 	else {
 		for (int i = 13; i < 25; i ++) {
-			if (state_vector[i] != 16) {
+			if (state_vector[i] == 16) {
 				available_blocks.push_back(i);
 			}			
 		}
@@ -131,6 +134,75 @@ vector<pair<int, int> > game_state::get_occupied_slots() {
 	return occupied_slots;
 }
 
+vector<pair<int, int> > game_state::get_all_no_tipping_moves() {
+	vector<pair<int, int> > safe_moves;
+	if (is_adding) {
+		vector<int> blocks = get_available_blocks();
+		vector<int> slots = get_empty_slots();
+		for (int i = 0; i < blocks.size(); i ++) {
+			int weight;
+			if (blocks[i] == 0) {
+				weight = 3;
+			}
+			else {
+				weight = (blocks[i]-1) % 12 + 1;
+			}
+			int head = 0;
+			int tail = (int) slots.size();
+			while (head < tail) {
+				int new_left = left_support_state + weight * (slots[head]-(-3));
+				int new_right = right_support_state + weight * (slots[head]-(-1));
+				if (new_left * new_right <= 0) {
+					break;
+				}
+				head ++;
+			}
+			while (head < tail) {
+				int new_left = left_support_state + weight * (slots[tail-1]-(-3));
+				int new_right = right_support_state + weight * (slots[tail-1]-(-1));
+				if (new_left * new_right <= 0) {
+					break;
+				}
+				tail --;
+			}
+			for (int j = head; j < tail; j ++) {
+				safe_moves.push_back(pair<int, int> (blocks[i], slots[j]));
+			}
+		}
+	}
+	else {
+		vector<pair<int, int> > all_moves = get_occupied_slots();
+		for (int i = 0; i < all_moves.size(); i ++) {
+			int weight;
+			if (all_moves[i].first == 0) {
+				weight = 3;
+			}
+			else {
+				weight = (all_moves[i].first-1) % 12 + 1;
+			}
+			int new_left = left_support_state - weight * (all_moves[i].second-(-3));
+			int new_right = right_support_state - weight * (all_moves[i].second-(-1));
+			if (new_left * new_right <= 0) {
+				safe_moves.push_back(all_moves[i]);
+			}
+		}
+	}
+	return safe_moves;
+}
+
+int * game_state::get_board_state() {
+	int * board_state = new int[31];
+	for (int i = 0; i < 31; i ++) {
+		board_state[i] = -1;
+	}
+	for (int i = 0; i < 25; i ++) {
+		if (state_vector[i] != 16) {
+			board_state[state_vector[i]+15] = i;
+		}
+	}
+	return board_state;
+}
+
 game_state game_state::move_add(int block_id, int slot_pos) {
 	return move_add(pair<int, int>(block_id, slot_pos));
 }
@@ -138,7 +210,8 @@ game_state game_state::move_add(int block_id, int slot_pos) {
 game_state game_state::move_add(pair<int, int> move) {
 	// check if is add mode
 	if (!is_adding) {
-		return NULL;
+		cout << "[X]not adding\n";
+		return *this;
 	}
 	
 	// check if the block is available to move
@@ -151,7 +224,8 @@ game_state game_state::move_add(pair<int, int> move) {
 		}
 	}
 	if (!checked) {
-		return NULL;
+		cout << "[X]not no such block\n";
+		return *this;
 	}
 	
 	// check if the slot is empty
@@ -164,7 +238,8 @@ game_state game_state::move_add(pair<int, int> move) {
 		}
 	}
 	if (!checked) {
-		return NULL;
+		cout << "[X]not no such slot\n";
+		return *this;
 	}
 	
 	int new_state_vector[25];
@@ -178,7 +253,7 @@ game_state game_state::move_add(pair<int, int> move) {
 game_state game_state::move_remove(int slot_pos) {
 	// check if is remove mode
 	if (is_adding) {
-		return NULL;
+		return *this;
 	}
 	
 	// check if the slot is occupied
@@ -190,7 +265,7 @@ game_state game_state::move_remove(int slot_pos) {
 		}
 	}
 	if (block_id == -1) {
-		return NULL;
+		return *this;
 	}
 	
 	int new_state_vector[25];
@@ -205,12 +280,12 @@ game_state game_state::move_remove(int slot_pos) {
 game_state game_state::move_remove(pair<int, int> move) {
 	// check if is remove mode
 	if (is_adding) {
-		return NULL;
+		return *this;
 	}
 	
 	// check if the slot is occupied
 	if (state_vector[move.first] != move.second) {
-		return NULL;
+		return *this;
 	}
 	
 	int new_state_vector[25];
@@ -222,10 +297,123 @@ game_state game_state::move_remove(pair<int, int> move) {
 	return game_state(new_state_vector, false);
 }
 
+game_state game_state::move_any(pair<int, int> move) {
+	if (is_adding) {
+		return move_add(move);
+	}
+	else {
+		return move_remove(move);
+	}
+}
+
 string game_state::graphic_output() {
+	int * board_state = get_board_state();
+	string gout;
 	
+	// print blocks
+	for (int i = 0; i < 31; i ++) {
+		if (board_state[i] == -1) {
+			gout.append("====");
+			continue;
+		}
+		if (board_state[i] == 0) {
+			gout.append("=<3>");
+			continue;
+		}
+		if (board_state[i] >= 1 && board_state[i] <= 9) {
+			char * block = new char[4];
+			sprintf(block, "=[%d]", board_state[i]);
+			gout.append(block);
+			continue;
+		}
+		if (board_state[i] >= 10 && board_state[i] <= 12) {
+			char * block = new char[4];
+			sprintf(block, "[%d]", board_state[i]);
+			gout.append(block);
+			continue;
+		}
+		if (board_state[i] >= 13 && board_state[i] <= 21) {
+			char * block = new char[4];
+			sprintf(block, "=(%d)", board_state[i]-12);
+			gout.append(block);
+			continue;
+		}
+		if (board_state[i] >= 22 && board_state[i] <= 24) {
+			char * block = new char[4];
+			sprintf(block, "(%d)", board_state[i]-12);
+			gout.append(block);
+			continue;
+		}
+	}
+	gout.append("\n");
+	gout.append("-15 -14 -13 -12 -11 -10  -9  -8  -7  -6  -5  -4  /\\  -2  /\\   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15\n");
+	char * support_state = new char[30];
+	sprintf(support_state, "left_support : %d\n", left_support_state);
+	gout.append(support_state);
+	sprintf(support_state, "right_support: %d\n", right_support_state);
+	gout.append(support_state);
+	gout.append("\n");
+	return gout;
+}
+
+game_state initial_game_state() {
+	int new_state_vector[25];
+	new_state_vector[0] = -4;
+	for (int i = 1; i < 25; i ++) {
+		new_state_vector[i] = 16;
+	}
+	return game_state(new_state_vector, true);
 }
 
 int main() {
+	// this is the test/example
+	
+	// get the initial state
+	game_state current_state = initial_game_state();
+	
+	// graphic output
+	string gout = current_state.graphic_output();
+	cout << gout;
+	
+	// state vector
+	int * state_vector = current_state.state_vector;
+	for (int i = 0; i < 25; i ++) {
+		cout << state_vector[i] << " ";
+	}
+	cout << "\n";
+
+	// move to another state
+	game_state next_state = current_state.move_add(3, 5);
+	gout = next_state.graphic_output();
+	cout << gout;
+
+	// left and right support state
+	cout << "l:" << next_state.left_support_state << " r:" << next_state.right_support_state << "\n";
+	
+	// lose state
+	cout << "is lost: " << next_state.is_lose_state << "\n";
+	
+	// game turn
+	cout << "turn: " << next_state.game_turn << "\n";
+	
+	// is first player's move
+	cout << "first player: " << next_state.is_first_player_move() << "\n";
+	
+	// get empty slots
+	vector<int> empty_slots = next_state.get_empty_slots();
+	for (int i = 0; i < empty_slots.size(); i ++) {
+		cout << empty_slots[i] << " ";
+	}
+	cout << " | empty_slots\n";
+	
+	// get available blocks
+	vector<int> avail_blocks = next_state.get_available_blocks();
+	for (int i = 0; i < avail_blocks.size(); i ++) {
+		cout << avail_blocks[i] << " ";
+	}
+	cout << " | avail_blocks\n";
+	
+	
+	
 	return 0;
 }
