@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "game_state.h"
 
-game_state::game_state(int _state_vector[25], bool _is_adding) {
+game_state::game_state(const int _state_vector[25], const bool _is_adding) {
 
 	// copy into the vector
 	for (int i = 0; i < 25; i ++) {
@@ -67,8 +67,24 @@ game_state::game_state(int _state_vector[25], bool _is_adding) {
 	}
 }
 
+game_state::game_state(const game_state& state) {
+	for (int i = 0; i < 25; i ++) {
+		state_vector[i] = state.state_vector[i];
+	}
+	left_support_state = state.left_support_state;
+	right_support_state = state.right_support_state;
+	winning_move = state.winning_move;
+	is_lose_state = state.is_lose_state;
+	is_adding = state.is_adding;
+	game_turn = state.game_turn;
+}
+
 bool game_state::is_first_player_move() {
 	return game_turn % 2 == 1;
+}
+
+bool game_state::is_tip() {
+	return left_support_state * right_support_state > 0;
 }
 
 vector<int> game_state::get_empty_slots() {
@@ -204,7 +220,7 @@ int * game_state::get_board_state() {
 }
 
 game_state game_state::move_add(int block_id, int slot_pos) {
-	return move_add(pair<int, int>(block_id, slot_pos));
+	return this->move_add(pair<int, int>(block_id, slot_pos));
 }
 
 game_state game_state::move_add(pair<int, int> move) {
@@ -363,57 +379,4 @@ game_state initial_game_state() {
 		new_state_vector[i] = 16;
 	}
 	return game_state(new_state_vector, true);
-}
-
-int main() {
-	// this is the test/example
-	
-	// get the initial state
-	game_state current_state = initial_game_state();
-	
-	// graphic output
-	string gout = current_state.graphic_output();
-	cout << gout;
-	
-	// state vector
-	int * state_vector = current_state.state_vector;
-	for (int i = 0; i < 25; i ++) {
-		cout << state_vector[i] << " ";
-	}
-	cout << "\n";
-
-	// move to another state
-	game_state next_state = current_state.move_add(3, 5);
-	gout = next_state.graphic_output();
-	cout << gout;
-
-	// left and right support state
-	cout << "l:" << next_state.left_support_state << " r:" << next_state.right_support_state << "\n";
-	
-	// lose state
-	cout << "is lost: " << next_state.is_lose_state << "\n";
-	
-	// game turn
-	cout << "turn: " << next_state.game_turn << "\n";
-	
-	// is first player's move
-	cout << "first player: " << next_state.is_first_player_move() << "\n";
-	
-	// get empty slots
-	vector<int> empty_slots = next_state.get_empty_slots();
-	for (int i = 0; i < empty_slots.size(); i ++) {
-		cout << empty_slots[i] << " ";
-	}
-	cout << " | empty_slots\n";
-	
-	// get available blocks
-	vector<int> avail_blocks = next_state.get_available_blocks();
-	for (int i = 0; i < avail_blocks.size(); i ++) {
-		cout << avail_blocks[i] << " ";
-	}
-	cout << " | avail_blocks\n";
-	
-	
-	
-	return 0;
 }

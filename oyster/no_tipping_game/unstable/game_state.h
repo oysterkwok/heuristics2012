@@ -26,10 +26,12 @@ public:
 	bool is_adding; // true if this is add mode, otherwise false if this is remove mode
 	int game_turn; // number of turns of this state, i.e. how many moves did for both players +1 (so starting from 1)
 	
-	game_state(int _state_vector[25], bool _is_adding); // constructor
-
+	game_state(const int _state_vector[25], const bool _is_adding); // default constructor
+	game_state(const game_state& state); // copy constructor
+	
 	// a few useful get methods
 	bool is_first_player_move(); // check whose turn is
+	bool is_tip();
 	vector<int> get_empty_slots(); // get empty slots on board, sorted from -15 to 15
 	vector<int> get_available_blocks(); // get available blocks to add, sorted from 1 to 24
 	vector<pair<int, int> > get_occupied_slots(); // get occupied slots, sorted by slot position, from -15 to 15, first of the pair is block id, second is slot position
