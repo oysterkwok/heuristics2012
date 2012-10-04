@@ -7,13 +7,13 @@
 //
 
 #include <iostream>
-#include "game_ai.h"
+#include "game_state.h"
 
 using namespace std;
 
-class human_ai : public game_ai {
+class human_ai {
 public:
-	human_ai(string name) : game_ai(name) {
+	human_ai(string name) : ai_name(name) {
 	}
 	
 	pair<int, int> ai_move(game_state state) {
@@ -38,4 +38,10 @@ public:
 			}
 		}
 	}
+	string get_name() {
+		return ai_name;
+	}
+	
+protected:
+	string ai_name;
 };
