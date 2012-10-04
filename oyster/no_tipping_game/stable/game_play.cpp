@@ -217,6 +217,7 @@ int main() {
 		n_game ++;
 		if (n_game % 100 == 0) {
 			cout << "+";
+			cout.flush();
 		}
 		if (n_game % 10000 == 0) {
 			cout << " | " << cache.size();
@@ -226,6 +227,7 @@ int main() {
 			}
 			time_t time_e = time(NULL);
 			cout << "/" << sum << " : " << 100 - 100.0*cache.size()/sum << "% | " << time_e - time_s << "seconds \n";
+			cout.flush();
 		}
 	}	
 }

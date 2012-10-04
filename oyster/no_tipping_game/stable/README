@@ -1,0 +1,16 @@
+it runs 140k games on my laptop with only one thread
+cached states/all states : cache performance% | run time
+6394366/6741914 : 5.15503% | 118seconds 
+
+so i still need to implement the multi-thread later
+
+=== TODO List ===
+1) muture ai
+alpha-beta purning with a maximum depth limit and run time limit from the current state
+2) multi-thread
+3) tactics? like some greedy solutions such as most safe/dangerous (actually this means for the whole game) move? so we would have an evaluation function again?
+4) (future) time performance improvement / other pruning functions
+
+=== Questions ===
+1) [Important] could our code keep running when it's our oppoment's turn? 
+2) [Important] is that possible to run the judge platform in 3 different machine of energon? like the judge server on energon 1, our program on energon 2, and our oppoment on energon 3? so that we would not get conflit on the resources. 
