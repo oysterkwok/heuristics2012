@@ -37,6 +37,7 @@ public:
 	vector<pair<int, int> > get_occupied_slots(); // get occupied slots, sorted by slot position, from -15 to 15, first of the pair is block id, second is slot position
 	vector<pair<int, int> > get_all_no_tipping_moves();
 	int * get_board_state();
+	string get_hash_code();
 	
 	// moves, return original state if the move is illeagel
 	// add moves, same effect with both

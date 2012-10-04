@@ -219,6 +219,20 @@ int * game_state::get_board_state() {
 	return board_state;
 }
 
+string game_state::get_hash_code() {
+	string hash;
+	if (is_adding) {
+		hash.push_back('A');
+	}
+	else {
+		hash.push_back('R');
+	}
+	for (int i = 0; i < 25; i ++) {
+		hash.push_back(97+15+state_vector[i]);
+	}
+	return hash;
+}
+
 game_state game_state::move_add(int block_id, int slot_pos) {
 	return this->move_add(pair<int, int>(block_id, slot_pos));
 }

@@ -12,6 +12,10 @@
 
 void game_state_example();
 void play_hr(human_ai &first_player, random_ai &second_player);
+void play_rr(random_ai &first_player, random_ai &second_player);
+
+bool is_print_info = false;
+map<string, int> cache;
 
 void game_state_example() {
 	// this is the test/example
@@ -120,8 +124,108 @@ void play_hr(human_ai &first_player, random_ai &second_player) {
 	cout << "game is over.\n";
 }
 
+void play_rr(random_ai &first_player, random_ai &second_player) {
+	game_state state = initial_game_state();
+	game_state next_state = initial_game_state();
+	bool is_game_over = false;
+	pair<int, int> move;
+	while (!is_game_over) {
+		move = first_player.ai_move(state);
+		if (move.first == -1 && move.second == 16) {
+			if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") surrender.\n";
+			is_game_over = true;
+			if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") wins!\n";
+			break;
+		}
+		next_state = state.move_any(move);
+		if (next_state.game_turn == state.game_turn) {
+			if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") made a bad move.\n";
+			is_game_over = true;
+			if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") wins!\n";
+			break;
+		}
+		if (is_print_info)
+		cout << "first player (" << first_player.get_name() << ") move: <" << move.first << ", " << move.second << ">\n";
+		state = next_state;
+		if (cache.find(state.get_hash_code()) == cache.end()) {
+			cache[state.get_hash_code()] = 1;
+		}
+		else {
+			cache[state.get_hash_code()] ++;
+		}
+		if (state.is_tip()) {
+			if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") made a tip.\n";
+			is_game_over = true;
+			if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") wins!\n";
+			break;
+		}
+		
+		move = second_player.ai_move(state);
+		if (move.first == -1 && move.second == 16) {
+			if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") surrender.\n";
+			is_game_over = true;
+			if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") wins!\n";
+			break;
+		}
+		next_state = state.move_any(move);
+		if (next_state.game_turn == state.game_turn) {
+			if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") made a bad move.\n";
+			is_game_over = true;
+			if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") wins!\n";
+			break;
+		}
+		if (is_print_info)
+		cout << "second player (" << second_player.get_name() << ") move: <" << move.first << ", " << move.second << ">\n";
+		state = next_state;
+		if (cache.find(state.get_hash_code()) == cache.end()) {
+			cache[state.get_hash_code()] = 1;
+		}
+		else {
+			cache[state.get_hash_code()] ++;
+		}
+		if (state.is_tip()) {
+			if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") made a tip.\n";
+			is_game_over = true;
+			if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") wins!\n";
+			break;	
+		}
+	}
+	if (is_print_info)
+	cout << "game is over.\n";
+}
+
 int main() {
+	srand((int) time(NULL));
 	human_ai hai = human_ai("human");
 	random_ai rai = random_ai("random_ai");
-	play_hr(hai, rai);
+	time_t time_s = time(NULL);
+	int n_game = 0;
+	while (true) {
+		play_rr(rai, rai);
+		n_game ++;
+		if (n_game % 100 == 0) {
+			cout << "+";
+		}
+		if (n_game % 10000 == 0) {
+			cout << " | " << cache.size();
+			int sum = 0;
+			for (map<string, int>::iterator iter = cache.begin(); iter != cache.end(); iter ++) {
+				sum += iter->second;
+			}
+			time_t time_e = time(NULL);
+			cout << "/" << sum << " : " << 100 - 100.0*cache.size()/sum << "% | " << time_e - time_s << "seconds \n";
+		}
+	}	
 }
