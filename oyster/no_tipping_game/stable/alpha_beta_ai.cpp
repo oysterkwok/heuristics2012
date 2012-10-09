@@ -63,6 +63,10 @@ public:
 			if (alpha >= beta) {
 				break;
 			}
+			time_t c_time = time(NULL);
+			if (c_time - s_time > 7) {
+				break;
+			}
 		}
 		
 		time_t e_time = time(NULL);
