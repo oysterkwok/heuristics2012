@@ -67,6 +67,7 @@ public:
 		
 		time_t e_time = time(NULL);
 		cout << "======used: " << e_time-s_time << " seconds=======\n";
+		cout << "result: " << alpha << "~" << beta << "\n";
 		return all_moves[best_index];
 	}
 	
