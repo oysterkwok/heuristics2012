@@ -219,6 +219,54 @@ int * game_state::get_board_state() {
 	return board_state;
 }
 
+string game_state::get_hash_code() {
+	string hash;
+	if (is_adding) {
+		hash.push_back('A');
+	}
+	else {
+		hash.push_back('R');
+	}
+	for (int i = 0; i < 25; i ++) {
+		if (state_vector[i] == 0) {
+			hash.push_back('0');
+			continue;
+		}
+		if (state_vector[i] == 16) {
+			hash.push_back('-');
+			continue;
+		}
+		if (state_vector[i] > 0) {
+			hash.push_back(char(65+state_vector[i]));
+			continue;
+		}
+		if (state_vector[i] < 0) {
+			hash.push_back(char(97-state_vector[i]));
+			continue;
+		}		
+	}
+	return hash;
+}
+
+game_state game_state::move_fast(pair<int, int> move) {
+	if (is_adding) {
+		int new_state_vector[25];
+		for (int i = 0; i < 25; i ++) {
+			new_state_vector[i] = state_vector[i];
+		}
+		new_state_vector[move.first] = move.second;
+		return game_state(new_state_vector, true);
+	}
+	else {
+		int new_state_vector[25];
+		for (int i = 0; i < 25; i ++) {
+			new_state_vector[i] = state_vector[i];
+		}
+		new_state_vector[move.first] = 16;
+		return game_state(new_state_vector, false);
+	}
+}
+
 game_state game_state::move_add(int block_id, int slot_pos) {
 	return this->move_add(pair<int, int>(block_id, slot_pos));
 }

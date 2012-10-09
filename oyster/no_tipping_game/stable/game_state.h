@@ -41,6 +41,7 @@ public:
 	
 	// moves, return original state if the move is illeagel
 	// add moves, same effect with both
+	game_state move_fast(pair<int, int> move);
 	game_state move_add(int block_id, int slot_pos);
 	game_state move_add(pair<int, int> move);
 	// remove moves, same effect with both	

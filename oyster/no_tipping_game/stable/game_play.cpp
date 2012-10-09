@@ -9,12 +9,14 @@
 #include <iostream>
 #include "random_ai.cpp"
 #include "human_ai.cpp"
+#include "alpha_beta_ai.cpp"
 
 void game_state_example();
 void play_hr(human_ai &first_player, random_ai &second_player);
 void play_rr(random_ai &first_player, random_ai &second_player);
+void play_sr(alpha_beta_ai &first_player, random_ai &second_player);
 
-bool is_print_info = false;
+bool is_print_info = true;
 map<string, int> cache;
 
 void game_state_example() {
@@ -206,10 +208,102 @@ void play_rr(random_ai &first_player, random_ai &second_player) {
 	cout << "game is over.\n";
 }
 
+void play_sr(alpha_beta_ai &first_player, random_ai &second_player) {
+	game_state state = initial_game_state();
+	game_state next_state = initial_game_state();
+	bool is_game_over = false;
+	pair<int, int> move;
+	while (!is_game_over) {
+		cout << state.graphic_output() << '\n';
+		move = first_player.ai_move(state);
+		cout << move.first << ":" << move.second << endl;
+		if (move.first == -1 && move.second == 16) {
+			if (is_print_info)
+				cout << "first player (" << first_player.get_name() << ") surrender.\n";
+			is_game_over = true;
+			if (is_print_info)
+				cout << "second player (" << second_player.get_name() << ") wins!\n";
+			break;
+		}
+		next_state = state.move_any(move);
+		if (next_state.game_turn == state.game_turn) {
+			if (is_print_info)
+				cout << "first player (" << first_player.get_name() << ") made a bad move.\n";
+			is_game_over = true;
+			if (is_print_info)
+				cout << "second player (" << second_player.get_name() << ") wins!\n";
+			break;
+		}
+		if (is_print_info)
+			cout << "first player (" << first_player.get_name() << ") move: <" << move.first << ", " << move.second << ">\n";
+		state = next_state;
+		if (cache.find(state.get_hash_code()) == cache.end()) {
+			cache[state.get_hash_code()] = 1;
+		}
+		else {
+			cache[state.get_hash_code()] ++;
+		}
+		if (state.is_tip()) {
+			if (is_print_info)
+				cout << "first player (" << first_player.get_name() << ") made a tip.\n";
+			is_game_over = true;
+			if (is_print_info)
+				cout << "second player (" << second_player.get_name() << ") wins!\n";
+			break;
+		}
+		
+		move = second_player.ai_move(state);
+		if (move.first == -1 && move.second == 16) {
+			if (is_print_info)
+				cout << "second player (" << second_player.get_name() << ") surrender.\n";
+			is_game_over = true;
+			if (is_print_info)
+				cout << "first player (" << first_player.get_name() << ") wins!\n";
+			break;
+		}
+		next_state = state.move_any(move);
+		if (next_state.game_turn == state.game_turn) {
+			if (is_print_info)
+				cout << "second player (" << second_player.get_name() << ") made a bad move.\n";
+			is_game_over = true;
+			if (is_print_info)
+				cout << "first player (" << first_player.get_name() << ") wins!\n";
+			break;
+		}
+		if (is_print_info)
+			cout << "second player (" << second_player.get_name() << ") move: <" << move.first << ", " << move.second << ">\n";
+		state = next_state;
+		if (cache.find(state.get_hash_code()) == cache.end()) {
+			cache[state.get_hash_code()] = 1;
+		}
+		else {
+			cache[state.get_hash_code()] ++;
+		}
+		if (state.is_tip()) {
+			if (is_print_info)
+				cout << "second player (" << second_player.get_name() << ") made a tip.\n";
+			is_game_over = true;
+			if (is_print_info)
+				cout << "first player (" << first_player.get_name() << ") wins!\n";
+			break;	
+		}
+	}
+	if (is_print_info)
+		cout << "game is over.\n";
+}
+
 int main() {
-	srand((int) time(NULL));
+	bool debug = true;
 	human_ai hai = human_ai("human");
 	random_ai rai = random_ai("random_ai");
+	alpha_beta_ai sai = alpha_beta_ai("super_ai");
+	
+	if (debug) {
+		play_sr(sai, rai);
+		return 0;
+	}
+	
+	srand((int) time(NULL));
 	time_t time_s = time(NULL);
 	int n_game = 0;
 	while (true) {
@@ -229,5 +323,6 @@ int main() {
 			cout << "/" << sum << " : " << 100 - 100.0*cache.size()/sum << "% | " << time_e - time_s << "seconds \n";
 			cout.flush();
 		}
-	}	
+	}
+	return 0;
 }
