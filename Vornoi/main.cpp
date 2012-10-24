@@ -7,14 +7,14 @@ int main(int argc, char const *argv[])
 
 	int nPlayers = 2;
 	int nRounds = 7;
-	board b1(100, 0.2, nPlayers);
+	board b1(50, 0.3, nPlayers);
 //	b1.printGrid();
 
 //	b1.printGridCenters();
 //	b1.printQuandrantCenters();
 //	b1.printIntrinsicValues();
 
-	board b2(100, 0.2, nPlayers);
+	board b2(50, 0.3, nPlayers);
 
 
 	vector<pair<int,int> > newTokens; // tokens placed by all the opponents in the last round

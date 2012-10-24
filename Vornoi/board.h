@@ -40,7 +40,7 @@ public:
 	int gridSize; // length of whole grid
 	int myColor; // color of this player (e.g. Red, Blue etc.)
 	int nPlayers;
-	bool firstToMove;
+	int firstToMove;
 	float intrinsicValueParam;
 
 	// METHODS: 

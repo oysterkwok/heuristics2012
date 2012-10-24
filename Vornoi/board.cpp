@@ -7,7 +7,7 @@ board::board(int newRatio, float newIVP, int num_players){
 	quadSize = 500/ratio;
 	gridSize = 1000/ratio;
 	myColor = 0;
-	firstToMove = true;
+	firstToMove = 0;
 	intrinsicValueParam = newIVP;
 	
 	// initialize quadrants and intrinsic values
@@ -144,10 +144,38 @@ pair<int,int> board::getNextMove() {
 	float bestScore = -numeric_limits<float>::infinity(), newScore;
 	pair<int,int> bestMove = pair<int,int>(-1,-1);
 	
-	// if you're the first, just place in the highest ranking square in Left Top
-	if (firstToMove) {
-		//cout << "first to move" << endl;
-		bestMove = pair<int,int>(1000*intrinsicValueParam,1000*intrinsicValueParam);
+//	cout << "current move: " << firstToMove << endl;
+	
+	if (firstToMove < 1) {
+//		cout << "move: " << firstToMove << endl;
+		vector<pair<int, int> > cand;
+		cand.push_back(pair<int, int> (gridSize*(intrinsicValueParam+.1), gridSize*(intrinsicValueParam+.1)));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam), gridSize*intrinsicValueParam));
+		cand.push_back(pair<int, int> (gridSize*intrinsicValueParam, gridSize*(1-intrinsicValueParam)));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam), gridSize*(1-intrinsicValueParam)));
+		
+		cand.push_back(pair<int, int> (gridSize*intrinsicValueParam-1, gridSize*intrinsicValueParam-1));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam)+1, gridSize*intrinsicValueParam-1));
+		cand.push_back(pair<int, int> (gridSize*intrinsicValueParam-1, gridSize*(1-intrinsicValueParam)+1));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam)+1, gridSize*(1-intrinsicValueParam)+1));
+		
+		bool ok = false;
+		for (int i = 0; i < 4; i ++) {
+			if (!isOccupied[cand[i].first][cand[i].second]) {
+				bestMove = pair<int, int>(grid[cand[i].first][cand[i].second].y, grid[cand[i].first][cand[i].second].x);
+				ok = true;
+				break;
+			}
+		}
+		if (!ok) {
+			for (int i = 0; i < 4; i ++) {
+				if (myColor != grid[cand[i].first][cand[i].second].color) {
+					bestMove = pair<int, int>(grid[cand[4+i].first][cand[4+i].second].y, grid[cand[4+i].first][cand[4+i].second].x);
+					ok = true;
+					break;
+				}
+			}			
+		}
 	}	
 	else {
 	 	// for each square
@@ -182,11 +210,39 @@ pair<int,int> board::getNextMove() {
 pair<int,int> board::getNextMove1() {
 	float bestScore = -numeric_limits<float>::infinity(), newScore;
 	pair<int,int> bestMove = pair<int,int>(-1,-1);
-	
-	// if you're the first, just place in the highest ranking square in Left Top
-	if (firstToMove) {
-		//cout << "first to move" << endl;
-		bestMove = pair<int,int>(1000*intrinsicValueParam,1000*intrinsicValueParam);
+
+//	cout << "current move: " << firstToMove << endl;
+
+	if (firstToMove < 1) {
+//		cout << "move: " << firstToMove << endl;
+		vector<pair<int, int> > cand;
+		cand.push_back(pair<int, int> (gridSize*(intrinsicValueParam+.1), gridSize*(intrinsicValueParam+.1)));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam), gridSize*intrinsicValueParam));
+		cand.push_back(pair<int, int> (gridSize*intrinsicValueParam, gridSize*(1-intrinsicValueParam)));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam), gridSize*(1-intrinsicValueParam)));
+		
+		cand.push_back(pair<int, int> (gridSize*intrinsicValueParam-1, gridSize*intrinsicValueParam-1));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam)+1, gridSize*intrinsicValueParam-1));
+		cand.push_back(pair<int, int> (gridSize*intrinsicValueParam-1, gridSize*(1-intrinsicValueParam)+1));
+		cand.push_back(pair<int, int> (gridSize*(1-intrinsicValueParam)+1, gridSize*(1-intrinsicValueParam)+1));
+		
+		bool ok = false;
+		for (int i = 0; i < 4; i ++) {
+			if (!isOccupied[cand[i].first][cand[i].second]) {
+				bestMove = pair<int, int>(grid[cand[i].first][cand[i].second].y, grid[cand[i].first][cand[i].second].x);
+				ok = true;
+				break;
+			}
+		}
+		if (!ok) {
+			for (int i = 0; i < 4; i ++) {
+				if (myColor != grid[cand[i].first][cand[i].second].color) {
+					bestMove = pair<int, int>(grid[cand[4+i].first][cand[4+i].second].y, grid[cand[4+i].first][cand[4+i].second].x);
+					ok = true;
+					break;
+				}
+			}			
+		}
 	}	
 	else {
 	 	// for each square
@@ -296,10 +352,10 @@ vector<float> board::computeScores1(pair<int,int> newMove){
 	float dist;
 	for (int i = 0; i < gridSize; i++) {
 		for (int j = 0; j < gridSize; j++) {
-			for (int i1 = 0; i1 < gridSize; i1++) {
-				for (int j1 = 0; j1 < gridSize; j1++) {
-					for (int i2 = 0; i2 < gridSize; i2++) {
-						for (int j2 = 0; j2 < gridSize; j2++) {
+			for (int i1 = 0; i1 < gridSize; i1+=10) {
+				for (int j1 = 0; j1 < gridSize; j1+=10) {
+					for (int i2 = 0; i2 < gridSize; i2+=10) {
+						for (int j2 = 0; j2 < gridSize; j2+=10) {
 							
 							dist = euclideanDistance(pair<int,int>( grid[i][j].y, grid[i][j].x ), newMove);
 							if (dist < grid[i][j].nearestTokenDist) 
@@ -335,7 +391,7 @@ vector<float> board::computeScores1(pair<int,int> newMove){
 void board::updateColors(vector<pair<int,int> > newTokens) {
 	for (unsigned int i = 0; i < newTokens.size(); i++) {
 		updateColor(i+1, newTokens[i]);
-		firstToMove = false;
+		firstToMove ++;
 	}
 }
 
