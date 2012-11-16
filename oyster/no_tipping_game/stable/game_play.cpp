@@ -299,7 +299,7 @@ int main() {
 	alpha_beta_ai sai = alpha_beta_ai("super_ai");
 	
 	if (debug) {
-		play_sr(sai, rai);
+		play_hr(hai, rai);
 		return 0;
 	}
 	
